@@ -2,91 +2,44 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\UserServiceInterface;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
+    // stores UserService
+    private $user;
 
-    public function getUser($id)
+    //DI with UserServiceInterface
+    public function __construct(UserServiceInterface $user)
     {
-        $users = DB::select("SELECT * FROM users WHERE id = $id");
-        //$result = app('db')->select("SELECT * FROM users WHERE id = $id");
-
-        if ( empty($users) ) {
-            return response()->json(
-                ['error' => [
-                    'message' => 'User not found'
-                ]], Response::HTTP_NOT_FOUND
-            );
-        }
-
-
-        return response()->json($users);
+        $this->user = $user;
     }
 
+    /**
+     * @param $id
+     * @return mixed
+     */
+    public function getUser($id)
+    {
+      return $this->user->get($id);
+    }
+
+    /**
+     * @param Request $request
+     */
     public function saveUser(Request $request)
     {
-        $contentType = $request->header('content-type');
-
-        if ( $contentType == 'application/json' ){
-
-            $name = $request->get('name');
-            $rating = $request->get('rating');
-
-            $requestId = $request->get("id");
-            $result = DB::select("SELECT * FROM users WHERE id = $requestId");
-
-            if ( !empty($result) ) {
-                return response()->json(
-                    ['error' => [
-                        'message' => 'User already exist'
-                    ]], Response::HTTP_CONFLICT
-                );
-            }
-
-            DB::insert("INSERT INTO users (name , rating) VALUES ('$name', '$rating');");
-
-            return response('User created', Response::HTTP_CREATED, [
-                'Location' => '/user/' . $requestId
-            ]);
-        } elseif ($contentType === 'application/xml') {
-            return response('<message>error</message>', 200, ['Content-type' => 'application/xml'] );
-        }
+        return $this->user->save($request);
     }
 
     public function deleteUser($id)
     {
-        $result = DB::delete("DELETE FROM users WHERE id = $id");
-
-        if (!$result) {
-            return response()->json(
-                ['error' => [
-                    'message' => 'User not found'
-                ]], Response::HTTP_NOT_FOUND
-            );
-        }
-
-        return response(null, Response::HTTP_NO_CONTENT);
+        return $this->user->delete($id);
     }
 
     public function updateUser(Request $request, $id)
     {
-        $dataToUpdate = $request->all();
-
-        foreach ($dataToUpdate as $key => $value ) {
-
-            $result = DB::update("UPDATE users SET $key = $value WHERE id = $id");
-            if (empty($result)) {
-                return response()->json(
-                    ['error' => [
-                        'message' => 'User not found'
-                    ]], Response::HTTP_NOT_FOUND
-                );
-            }
-        }
-
-        return response(null, Response::HTTP_OK);
+        return $this->user->update($request, $id);
     }
 }

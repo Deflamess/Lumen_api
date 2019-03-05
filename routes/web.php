@@ -21,6 +21,9 @@ $router->delete('/{city}', 'WeatherController@deleteCity');
 
 //user - rating api
 $router->get('/user/{id}', 'UserController@getUser');
-$router->post('/user', 'UserController@saveUser');
+$router->post('/user/', 'UserController@saveUser');
 $router->delete('/user/{id}', 'UserController@deleteUser');
 $router->patch('/user/{id}', 'UserController@updateUser');
+
+//film api routes
+$router->get('/film/{film}', 'FilmController@search');

@@ -2,12 +2,52 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\RestClientInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class WeatherController extends Controller
 {
-    private $citiesWeather = [
+
+    private $restClient;
+
+    private const KELVIN = 273.15;
+    private const MMHG = 0.750; // millimetre(s) of mercury 1 mm high
+
+    public function __construct(RestClientInterface $restClient)
+    {
+        /**
+         * Dependency Injection of RestClient by pointing to its
+         * interface RestClientInterface
+         */
+        $this->restClient = $restClient;
+    }
+
+    public function getWeather($city)
+    {
+        $weather = $this->restClient->get('https://api.openweathermap.org/data/2.5/weather?q='.$city
+                                    . ',ua'
+                                .'&appid=89b6cfb60594b134774a7dd015413aff');
+
+        $currentTemp = $weather['main']['temp'] - self::KELVIN;
+        $humidity = $weather['main']['humidity'];
+        $pressure = $weather['main']['pressure'] * self::MMHG;
+        $wind = $weather['wind']['speed'];
+
+        $result = [
+            'temperature' => $currentTemp,
+            'humidity' => $humidity,
+            'pressure' => $pressure,
+            'wind_speed' =>$wind
+        ];
+        return response()->json($result);
+    }
+
+
+
+    /* example how api works as server
+
+     * private $citiesWeather = [
        'dnipro' => [
             'temp' => 23,
             'humidity' => 56,
@@ -66,7 +106,7 @@ class WeatherController extends Controller
             );
         }
         return response(null, Response::HTTP_NO_CONTENT);
-    }
+    }*/
 
 
 }

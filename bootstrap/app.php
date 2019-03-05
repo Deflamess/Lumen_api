@@ -48,6 +48,17 @@ $app->singleton(
     App\Console\Kernel::class
 );
 
+$app->singleton(
+    App\Services\RestClientInterface::class,
+    App\Services\RestClient::class
+);
+
+// UserServiceInterface
+$app->singleton(
+    App\Services\UserServiceInterface::class,
+    App\Services\UserService::class
+);
+
 /*
 |--------------------------------------------------------------------------
 | Register Middleware
